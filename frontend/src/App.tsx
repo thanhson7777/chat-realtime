@@ -28,6 +28,15 @@ function App() {
 
   return (
     <>
+      {/* Background Glow Effect */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[-1]"
+        style={{
+          background: "radial-gradient(circle at top left, rgba(255, 140, 60, 0.4), transparent 50%)",
+          filter: "blur(80px)"
+        }}
+      />
+
       <Toaster richColors />
       <BrowserRouter>
         <Routes>

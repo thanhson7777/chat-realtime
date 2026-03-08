@@ -35,7 +35,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {...props}
     >
       {/* Header */}
-      <SidebarHeader>
+      <SidebarHeader className="bg-zinc-100/50 dark:bg-zinc-950/50 backdrop-blur-md pb-2 border-b">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

@@ -19,11 +19,11 @@
     --popover-foreground: 240 15% 15%;
 
     /* Primary */
-    /* Tím */
-    --primary: 271 79% 47%;
-    --primary-foreground: 210 40% 96.1%; /*slate-100*/
-    /* Hồng */
-    --primary-glow: 320 100% 70%;
+    /* Cam */
+    --primary: 25 100% 62%;
+    --primary-foreground: 210 40% 98%;
+    /* Vàng cam sáng */
+    --primary-glow: 40 100% 60%;
 
     /* Secondary - lavender */
     --secondary: 270 50% 92%;
@@ -38,7 +38,7 @@
     --accent-foreground: 240 100% 15%;
 
     /* Chat colors */
-    --chat-bubble-sent: 271 79% 47%;
+    --chat-bubble-sent: 25 100% 62%;
     --chat-bubble-sent-foreground: 0 0% 100%;
     --chat-bubble-received: 0 0% 96%;
     --chat-bubble-received-foreground: 240 15% 15%;
@@ -62,7 +62,7 @@
     /* Border and input */
     --border: 282 16% 87%;
     --input: 260 30% 92%;
-    --ring: 271 79% 47%;
+    --ring: 25 100% 62%;
 
     /* Design system values */
     --radius: 1rem;
@@ -75,8 +75,8 @@
     );
     --gradient-chat: linear-gradient(
       135deg,
-      hsl(280, 100%, 65%),
-      hsl(320, 100%, 70%)
+      hsl(25, 100%, 62%),
+      hsl(40, 100%, 60%)
     );
     --gradient-accent: linear-gradient(
       90deg,
@@ -91,12 +91,12 @@
     );
 
     /* pattern craft */
-    --gradient-purple: linear-gradient(315deg, #E1BEE7 0%, #F3E5F5 20%, #FCE4EC 40%, #FFF0F5 60%, #F8BBD9 80%, #E1BEE7 100%);
+    --gradient-orange: linear-gradient(315deg, #FFCC80 0%, #FFE0B2 20%, #FFF3E0 40%, #FFF8E1 60%, #FFE082 80%, #FFCC80 100%);
 
     /* Shadows */
-    --shadow-soft: 0 8px 32px -8px hsl(271 79% 47% / 0.15);
+    --shadow-soft: 0 8px 32px -8px hsl(25 100% 62% / 0.15);
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
-    --shadow-bubble: 0 4px 20px -4px hsl(280 50% 70% / 0.2);
+    --shadow-bubble: 0 4px 20px -4px hsl(25 100% 62% / 0.2);
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
@@ -131,9 +131,9 @@
     --popover: 240 15% 12%;
     --popover-foreground: 250 100% 95%;
 
-    --primary: 280 100% 70%;
-    --primary-foreground: 240 15% 8%;
-    --primary-glow: 320 100% 80%;
+    --primary: 25 100% 62%;
+    --primary-foreground: 240 15% 98%;
+    --primary-glow: 40 100% 60%;
 
     --secondary: 270 20% 20%;
     --secondary-foreground: 280 100% 80%;
@@ -145,7 +145,7 @@
     --accent-foreground: 240 15% 8%;
 
     /* Chat bubbles in dark mode */
-    --chat-bubble-sent: 280 100% 65%;
+    --chat-bubble-sent: 25 100% 62%;
     --chat-bubble-sent-foreground: 0 0% 100%;
     --chat-bubble-received: 240 15% 18%;
     --chat-bubble-received-foreground: 250 100% 90%;
@@ -160,18 +160,18 @@
 
     --border: 281 15% 25%;
     --input: 240 15% 18%;
-    --ring: 280 100% 70%;
+    --ring: 25 100% 62%;
 
     /* Dark mode gradients */
     --gradient-primary: linear-gradient(
       135deg,
-      hsl(280, 100%, 70%),
-      hsl(320, 100%, 80%)
+      hsl(25, 100%, 62%),
+      hsl(40, 100%, 60%)
     );
     --gradient-chat: linear-gradient(
       135deg,
-      hsl(280, 100%, 70%),
-      hsl(320, 100%, 75%)
+      hsl(25, 100%, 62%),
+      hsl(40, 100%, 55%)
     );
     --gradient-accent: linear-gradient(
       90deg,
@@ -191,9 +191,9 @@
     );
 
     /* Dark shadows with glow */
-    --shadow-soft: 0 8px 32px -8px hsl(280 100% 70% / 0.25);
+    --shadow-soft: 0 8px 32px -8px hsl(25 100% 62% / 0.25);
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.4);
-    --shadow-bubble: 0 4px 20px -4px hsl(280 80% 50% / 0.3);
+    --shadow-bubble: 0 4px 20px -4px hsl(25 80% 50% / 0.3);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -213,7 +213,7 @@
 /* Chat App Utility Classes */
 @layer components {
   .glass {
-    @apply bg-gradient-to-br from-violet-200/10 to-pink-100/5 border-violet-300/30;
+    @apply bg-gradient-to-br from-orange-200/10 to-amber-100/5 border-orange-300/30;
   }
 
   .dark .glass {
@@ -363,6 +363,24 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased min-h-screen relative;
+  }
+  
+  /* Global glow effect */
+  body::before {
+    content: "";
+    position: fixed;
+    top: -10vh;
+    left: -10vw;
+    width: 60vw;
+    height: 60vh;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 140, 60, 0.25),
+      transparent 70%
+    );
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
   }
 }
