@@ -12,4 +12,12 @@ export const userService = {
 
     return res.data;
   },
+  updateProfile: async (data: any) => {
+    const res = await api.put("/users/profile", data);
+    return res.data;
+  },
+  changePassword: async (data: any) => {
+    const res = await api.put("/users/change-password", data);
+    return res.data;
+  },
 };
