@@ -42,7 +42,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
   };
 
   return (
-    <div className="flex items-center gap-2 p-3 min-h-[56px] bg-background">
+    <div className="flex items-center gap-2 p-3 min-h-[56px] bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-md border-t">
       <Button
         variant="ghost"
         size="icon"
@@ -57,7 +57,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Soạn tin nhắn..."
-          className="pr-20 h-9 bg-white border-border/50 focus:border-primary/50 transition-smooth resize-none"
+          className="pr-20 h-9 bg-zinc-100 dark:bg-zinc-900 border-border/50 focus:border-primary/50 transition-smooth resize-none"
         ></Input>
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
           <Button
