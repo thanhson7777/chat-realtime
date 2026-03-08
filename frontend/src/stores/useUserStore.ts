@@ -19,9 +19,39 @@ export const useUserStore = create<UserState>((set, get) => ({
 
         useChatStore.getState().fetchConversations();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Lỗi khi updateAvatarUrl", error);
-      toast.error("Upload avatar không thành công!");
+      toast.error(error.response?.data?.message || "Upload avatar không thành công!");
     }
   },
+
+  updateProfile: async (data) => {
+    try {
+      const res = await userService.updateProfile(data);
+      const { user, setUser } = useAuthStore.getState();
+
+      if (user && res.user) {
+        setUser(res.user);
+      }
+
+      toast.success(res.message || "Cập nhật hồ sơ thành công!");
+      return true;
+    } catch (error: any) {
+      console.error("Lỗi updateProfile", error);
+      toast.error(error.response?.data?.message || "Cập nhật thất bại!");
+      return false;
+    }
+  },
+
+  changePassword: async (data) => {
+    try {
+      const res = await userService.changePassword(data);
+      toast.success(res.message || "Đổi mật khẩu thành công!");
+      return true;
+    } catch (error: any) {
+      console.error("Lỗi changePassword", error);
+      toast.error(error.response?.data?.message || "Đổi mật khẩu thất bại!");
+      return false;
+    }
+  }
 }));

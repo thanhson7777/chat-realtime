@@ -20,6 +20,7 @@ export interface LastMessage {
   _id: string;
   content: string;
   createdAt: string;
+  isRecalled?: boolean;
   sender: {
     _id: string;
     displayName: string;
@@ -52,5 +53,6 @@ export interface Message {
   imgUrl?: string | null;
   updatedAt?: string | null;
   createdAt: string;
+  isRecalled?: boolean;
   isOwn?: boolean;
 }

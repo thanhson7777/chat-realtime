@@ -1,4 +1,5 @@
 import { Shield, Bell, ShieldBan } from "lucide-react";
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -7,57 +8,70 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ChangePasswordDialog } from "./ChangePasswordDialog";
 
-const PrivacySettings = () => (
-  <Card className="glass-strong border-border/30">
-    <CardHeader>
-      <CardTitle className="flex items-center gap-2">
-        <Shield className="h-5 w-5 text-primary" />
-        Quyền riêng tư & Bảo mật
-      </CardTitle>
-      <CardDescription>
-        Quản lý cài đặt quyền riêng tư và bảo mật của bạn
-      </CardDescription>
-    </CardHeader>
+const PrivacySettings = () => {
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
-    <CardContent className="space-y-6">
-      <div className="space-y-4">
-        <Button
-          variant="outline"
-          className="w-full justify-start glass-light border-border/30 hover:text-warning"
-        >
-          <Shield className="h-4 w-4 mr-2" />
-          Đổi mật khẩu
-        </Button>
+  return (
+    <>
+      <Card className="glass-strong border-border/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            Quyền riêng tư & Bảo mật
+          </CardTitle>
+          <CardDescription>
+            Quản lý cài đặt quyền riêng tư và bảo mật của bạn
+          </CardDescription>
+        </CardHeader>
 
-        <Button
-          variant="outline"
-          className="w-full justify-start glass-light border-border/30 hover:text-info"
-        >
-          <Bell className="h-4 w-4 mr-2" />
-          Cài đặt thông báo
-        </Button>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsPasswordDialogOpen(true)}
+              className="w-full justify-start glass-light border-border/30 hover:text-warning"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Đổi mật khẩu
+            </Button>
 
-        <Button
-          variant="outline"
-          className="w-full justify-start glass-light border-border/30 hover:text-destructive"
-        >
-          <ShieldBan className="size-4 mr-2" />
-          Chặn & Báo cáo
-        </Button>
-      </div>
+            <Button
+              variant="outline"
+              className="w-full justify-start glass-light border-border/30 hover:text-info"
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Cài đặt thông báo
+            </Button>
 
-      <div className="pt-4 border-t border-border/30">
-        <h4 className="font-medium mb-3 text-destructive">Khu vực nguy hiểm</h4>
-        <Button
-          variant="destructive"
-          className="w-full"
-        >
-          Xoá tài khoản
-        </Button>
-      </div>
-    </CardContent>
-  </Card>
-);
+            <Button
+              variant="outline"
+              className="w-full justify-start glass-light border-border/30 hover:text-destructive"
+            >
+              <ShieldBan className="size-4 mr-2" />
+              Chặn & Báo cáo
+            </Button>
+          </div>
+
+          <div className="pt-4 border-t border-border/30">
+            <h4 className="font-medium mb-3 text-destructive">Khu vực nguy hiểm</h4>
+            <Button
+              variant="destructive"
+              className="w-full"
+            >
+              Xoá tài khoản
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <ChangePasswordDialog
+        open={isPasswordDialogOpen}
+        onOpenChange={setIsPasswordDialogOpen}
+      />
+    </>
+  );
+};
 
 export default PrivacySettings;

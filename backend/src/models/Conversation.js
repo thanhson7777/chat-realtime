@@ -48,6 +48,10 @@ const lastMessageSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isRecalled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     _id: false,

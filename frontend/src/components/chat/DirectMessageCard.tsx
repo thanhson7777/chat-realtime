@@ -20,7 +20,11 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   if (!otherUser) return null;
 
   const unreadCount = convo.unreadCounts[user._id];
-  const lastMessage = convo.lastMessage?.content ?? "";
+  let lastMessage = convo.lastMessage?.content ?? "";
+
+  if (convo.lastMessage?.isRecalled) {
+    lastMessage = "Tin nhắn đã được thu hồi";
+  }
 
   const handleSelectConversation = async (id: string) => {
     setActiveConversation(id);

@@ -69,6 +69,8 @@ export interface ChatState {
     name: string,
     memberIds: string[]
   ) => Promise<void>;
+  recallMessage: (messageId: string) => Promise<void>;
+  updateRecalledMessage: (messageId: string, conversationId: string) => void;
 }
 
 export interface SocketState {
@@ -93,4 +95,6 @@ export interface FriendState {
 
 export interface UserState {
   updateAvatarUrl: (formData: FormData) => Promise<void>;
+  updateProfile: (data: any) => Promise<boolean>;
+  changePassword: (data: any) => Promise<boolean>;
 }

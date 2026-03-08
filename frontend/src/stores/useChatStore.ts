@@ -229,6 +229,52 @@ export const useChatStore = create<ChatState>()(
           set({ loading: false });
         }
       },
+      recallMessage: async (messageId) => {
+        try {
+          await chatService.recallMessage(messageId);
+        } catch (error) {
+          console.error("Lỗi xảy ra khi thu hồi tin nhắn trong store", error);
+        }
+      },
+      updateRecalledMessage: (messageId, conversationId) => {
+        set((state) => {
+          const prevConvoMessages = state.messages[conversationId]?.items ?? [];
+          const updatedItems = prevConvoMessages.map((m) =>
+            m._id === messageId
+              ? { ...m, isRecalled: true, content: "", imgUrl: "" }
+              : m
+          );
+
+          const updatedConversations = state.conversations.map((c) => {
+            if (
+              c._id === conversationId &&
+              c.lastMessage &&
+              c.lastMessage._id === messageId
+            ) {
+              return {
+                ...c,
+                lastMessage: {
+                  ...c.lastMessage,
+                  isRecalled: true,
+                  content: "",
+                },
+              };
+            }
+            return c;
+          });
+
+          return {
+            messages: {
+              ...state.messages,
+              [conversationId]: {
+                ...state.messages[conversationId],
+                items: updatedItems,
+              },
+            },
+            conversations: updatedConversations,
+          };
+        });
+      },
     }),
     {
       name: "chat-storage",
