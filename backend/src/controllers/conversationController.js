@@ -59,7 +59,7 @@ export const createConversation = async (req, res) => {
     }
 
     await conversation.populate([
-      { path: "participants.userId", select: "displayName avatarUrl" },
+      { path: "participants.userId", select: "displayName avatarUrl username email" },
       {
         path: "seenBy",
         select: "displayName avatarUrl",
@@ -70,6 +70,8 @@ export const createConversation = async (req, res) => {
     const participants = (conversation.participants || []).map((p) => ({
       _id: p.userId?._id,
       displayName: p.userId?.displayName,
+      username: p.userId?.username,
+      email: p.userId?.email,
       avatarUrl: p.userId?.avatarUrl ?? null,
       joinedAt: p.joinedAt,
     }));
@@ -95,10 +97,10 @@ export const getConversations = async (req, res) => {
     const conversations = await Conversation.find({
       "participants.userId": userId,
     })
-      .sort({ lastMessageAt: -1, updatedAt: -1 })
+      .sort({ isPinned: -1, pinnedAt: -1, lastMessageAt: -1, updatedAt: -1 })
       .populate({
         path: "participants.userId",
-        select: "displayName avatarUrl",
+        select: "displayName avatarUrl username email",
       })
       .populate({
         path: "lastMessage.senderId",
@@ -113,6 +115,8 @@ export const getConversations = async (req, res) => {
       const participants = (convo.participants || []).map((p) => ({
         _id: p.userId?._id,
         displayName: p.userId?.displayName,
+        username: p.userId?.username,
+        email: p.userId?.email,
         avatarUrl: p.userId?.avatarUrl ?? null,
         joinedAt: p.joinedAt,
       }));
@@ -180,6 +184,62 @@ export const getUserConversationsForSocketIO = async (userId) => {
   }
 };
 
+export const pinConversation = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user._id;
+
+    const conversation = await Conversation.findById(conversationId);
+
+    if (!conversation) {
+      return res.status(404).json({ message: "Không tìm thấy cuộc hội thoại" });
+    }
+
+    const isParticipant = conversation.participants.some(
+      (p) => p.userId.toString() === userId.toString()
+    );
+
+    if (!isParticipant) {
+      return res.status(403).json({ message: "Bạn không phải là thành viên của cuộc hội thoại này" });
+    }
+
+    conversation.isPinned = !conversation.isPinned;
+    conversation.pinnedAt = conversation.isPinned ? new Date() : null;
+    await conversation.save();
+
+    await conversation.populate([
+      { path: "participants.userId", select: "displayName avatarUrl username email" },
+      { path: "seenBy", select: "displayName avatarUrl" },
+      { path: "lastMessage.senderId", select: "displayName avatarUrl" },
+    ]);
+
+    const participants = (conversation.participants || []).map((p) => ({
+      _id: p.userId?._id,
+      displayName: p.userId?.displayName,
+      username: p.userId?.username,
+      email: p.userId?.email,
+      avatarUrl: p.userId?.avatarUrl ?? null,
+      joinedAt: p.joinedAt,
+    }));
+
+    const formatted = {
+      ...conversation.toObject(),
+      unreadCounts: conversation.unreadCounts || {},
+      participants,
+    };
+
+    io.to(conversationId).emit("conversation-updated", formatted);
+
+    return res.status(200).json({
+      message: conversation.isPinned ? "Đã ghim cuộc hội thoại" : "Đã bỏ ghim cuộc hội thoại",
+      conversation: formatted,
+    });
+  } catch (error) {
+    console.error("Lỗi khi ghim/bỏ ghim cuộc hội thoại", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
+
 export const markAsSeen = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -231,6 +291,69 @@ export const markAsSeen = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi khi mark as seen", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
+
+export const addReaction = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user._id;
+
+    if (!emoji) {
+      return res.status(400).json({ message: "Emoji là bắt buộc" });
+    }
+
+    const allowedEmojis = ["👍", "❤️", "😂", "😭", "🙏", "😍", "😎", "🤩", "😡", "👏", "🔥", "✅", "❌"];
+    if (!allowedEmojis.includes(emoji)) {
+      return res.status(400).json({ message: "Emoji không hợp lệ" });
+    }
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Không tìm thấy tin nhắn" });
+    }
+
+    // Tìm reaction với emoji này
+    let reaction = message.reactions.find((r) => r.emoji === emoji);
+
+    if (reaction) {
+      // Nếu user đã thả reaction này, bỏ ra
+      if (reaction.userIds.includes(userId)) {
+        reaction.userIds = reaction.userIds.filter((id) => id.toString() !== userId.toString());
+
+        if (reaction.userIds.length === 0) {
+          message.reactions = message.reactions.filter((r) => r.emoji !== emoji);
+        }
+      } else {
+        // Thêm user vào reaction
+        reaction.userIds.push(userId);
+      }
+    } else {
+      // Tạo reaction mới
+      message.reactions.push({
+        emoji,
+        userIds: [userId],
+      });
+    }
+
+    await message.save();
+
+    // Emit socket event
+    io.to(message.conversationId.toString()).emit("reaction-updated", {
+      messageId: message._id,
+      conversationId: message.conversationId,
+      reactions: message.reactions,
+    });
+
+    return res.status(200).json({
+      message: "Reaction đã được cập nhật",
+      reactions: message.reactions,
+    });
+  } catch (error) {
+    console.error("Lỗi khi thêm reaction", error);
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };

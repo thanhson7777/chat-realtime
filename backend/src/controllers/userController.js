@@ -118,3 +118,23 @@ export const changePassword = async (req, res) => {
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
+
+/** Lấy thông tin profile của user theo ID (cho xem profile người khác) */
+export const getUserProfileById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select(
+      "_id username email displayName avatarUrl bio phone createdAt updatedAt"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error("Lỗi khi lấy profile theo ID", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};

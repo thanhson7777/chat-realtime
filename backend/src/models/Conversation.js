@@ -90,6 +90,14 @@ const conversationSchema = new mongoose.Schema(
       of: Number,
       default: {},
     },
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
+    pinnedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
