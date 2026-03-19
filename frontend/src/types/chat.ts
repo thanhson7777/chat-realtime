@@ -1,6 +1,8 @@
 export interface Participant {
   _id: string;
+  username?: string;
   displayName: string;
+  email?: string;
   avatarUrl?: string | null;
   joinedAt: string;
 }
@@ -37,6 +39,8 @@ export interface Conversation {
   seenBy: SeenUser[];
   lastMessage: LastMessage | null;
   unreadCounts: Record<string, number>; // key = userId, value = unread count
+  isPinned: boolean;
+  pinnedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,4 +59,10 @@ export interface Message {
   createdAt: string;
   isRecalled?: boolean;
   isOwn?: boolean;
+  reactions?: Reaction[];
+}
+
+export interface Reaction {
+  emoji: string;
+  userIds: string[];
 }

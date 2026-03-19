@@ -82,6 +82,11 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     socket.on("message-recalled", ({ messageId, conversationId }) => {
       useChatStore.getState().updateRecalledMessage(messageId, conversationId);
     });
+
+    // reaction updated
+    socket.on("reaction-updated", ({ messageId, conversationId, reactions }) => {
+      useChatStore.getState().updateReactions(messageId, conversationId, reactions);
+    });
   },
   disconnectSocket: () => {
     const socket = get().socket;

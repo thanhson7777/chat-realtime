@@ -1,5 +1,6 @@
 import { chatService } from "@/services/chatService";
 import type { ChatState } from "@/types/store";
+import type { Conversation } from "@/types/chat";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./useAuthStore";
@@ -150,10 +151,10 @@ export const useChatStore = create<ChatState>()(
           console.error("Lỗi xảy khi ra add message:", error);
         }
       },
-      updateConversation: (conversation) => {
+      updateConversation: (conversation: Partial<Conversation>) => {
         set((state) => ({
           conversations: state.conversations.map((c) =>
-            c._id === conversation._id ? { ...c, ...conversation } : c
+            c._id === (conversation as Conversation)._id ? { ...c, ...conversation } : c
           ),
         }));
       },
@@ -272,6 +273,64 @@ export const useChatStore = create<ChatState>()(
               },
             },
             conversations: updatedConversations,
+          };
+        });
+      },
+      togglePinConversation: async (conversationId) => {
+        try {
+          const res = await chatService.pinConversation(conversationId);
+          get().updateConversationPin(res.conversation);
+        } catch (error) {
+          console.error("Lỗi khi ghim/bỏ ghim cuộc hội thoại", error);
+        }
+      },
+      updateConversationPin: (conversation) => {
+        set((state) => {
+          const updatedConversations = state.conversations.map((c) =>
+            c._id === conversation._id ? { ...c, ...conversation } : c
+          );
+
+          // Sắp xếp lại: pinned lên đầu
+          updatedConversations.sort((a, b) => {
+            if (a.isPinned && !b.isPinned) return -1;
+            if (!a.isPinned && b.isPinned) return 1;
+            if (a.isPinned && b.isPinned) {
+              return new Date(b.pinnedAt ?? 0).getTime() - new Date(a.pinnedAt ?? 0).getTime();
+            }
+            return new Date(b.lastMessageAt ?? 0).getTime() - new Date(a.lastMessageAt ?? 0).getTime();
+          });
+
+          return {
+            conversations: updatedConversations,
+          };
+        });
+      },
+      // Reactions
+      addReaction: async (messageId, emoji) => {
+        try {
+          const { activeConversationId } = get();
+          if (!activeConversationId) return;
+
+          await chatService.addReaction(messageId, emoji, activeConversationId);
+        } catch (error) {
+          console.error("Lỗi khi thêm reaction", error);
+        }
+      },
+      updateReactions: (messageId, conversationId, reactions) => {
+        set((state) => {
+          const prevMessages = state.messages[conversationId]?.items ?? [];
+          const updatedItems = prevMessages.map((m) =>
+            m._id === messageId ? { ...m, reactions } : m
+          );
+
+          return {
+            messages: {
+              ...state.messages,
+              [conversationId]: {
+                ...state.messages[conversationId],
+                items: updatedItems,
+              },
+            },
           };
         });
       },

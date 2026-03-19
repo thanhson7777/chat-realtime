@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { userService } from "@/services/userService";
 import type { UserState } from "@/types/store";
 import { create } from "zustand";
@@ -5,6 +6,7 @@ import { useAuthStore } from "./useAuthStore";
 import { toast } from "sonner";
 import { useChatStore } from "./useChatStore";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useUserStore = create<UserState>((set, get) => ({
   updateAvatarUrl: async (formData) => {
     try {

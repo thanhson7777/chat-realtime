@@ -1,4 +1,4 @@
-import type { User } from "@/types/user";
+import type { User } from "@/types/index";
 import { Card, CardContent } from "../ui/card";
 import UserAvatar from "../chat/UserAvatar";
 import { Badge } from "../ui/badge";

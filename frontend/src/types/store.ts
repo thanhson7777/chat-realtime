@@ -29,6 +29,11 @@ export interface ThemeState {
   setTheme: (dark: boolean) => void;
 }
 
+export interface Reaction {
+  emoji: string;
+  userIds: string[];
+}
+
 export interface ChatState {
   conversations: Conversation[];
   messages: Record<
@@ -61,7 +66,7 @@ export interface ChatState {
   // add message
   addMessage: (message: Message) => Promise<void>;
   // update convo
-  updateConversation: (conversation: unknown) => void;
+  updateConversation: (conversation: Partial<Conversation>) => void;
   markAsSeen: () => Promise<void>;
   addConvo: (convo: Conversation) => void;
   createConversation: (
@@ -71,6 +76,11 @@ export interface ChatState {
   ) => Promise<void>;
   recallMessage: (messageId: string) => Promise<void>;
   updateRecalledMessage: (messageId: string, conversationId: string) => void;
+  togglePinConversation: (conversationId: string) => Promise<void>;
+  updateConversationPin: (conversation: Conversation) => void;
+  // reactions
+  addReaction: (messageId: string, emoji: string) => Promise<void>;
+  updateReactions: (messageId: string, conversationId: string, reactions: Reaction[]) => void;
 }
 
 export interface SocketState {

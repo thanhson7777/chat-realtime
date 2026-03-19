@@ -3,14 +3,22 @@ import ChatCard from "./ChatCard";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { cn } from "@/lib/utils";
-import UserAvatar from "./UserAvatar";
+import UserAvatarWithMenu from "./UserAvatarWithMenu";
 import StatusBadge from "./StatusBadge";
 import UnreadCountBadge from "./UnreadCountBadge";
 import { useSocketStore } from "@/stores/useSocketStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Pin, PinOff, MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
 
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation, messages, fetchMessages } =
+  const { activeConversationId, setActiveConversation, messages, fetchMessages, togglePinConversation } =
     useChatStore();
   const { onlineUsers } = useSocketStore();
 
@@ -33,6 +41,16 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
     }
   };
 
+  const handleTogglePin = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await togglePinConversation(convo._id);
+      toast.success(convo.isPinned ? "Đã bỏ ghim cuộc hội thoại" : "Đã ghim cuộc hội thoại");
+    } catch {
+      toast.error("Không thể ghim/bỏ ghim cuộc hội thoại");
+    }
+  };
+
   return (
     <ChatCard
       convoId={convo._id}
@@ -47,10 +65,17 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
       unreadCount={unreadCount}
       leftSection={
         <>
-          <UserAvatar
+          <UserAvatarWithMenu
             type="sidebar"
             name={otherUser.displayName ?? ""}
             avatarUrl={otherUser.avatarUrl ?? undefined}
+            userData={{
+              _id: otherUser._id,
+              username: otherUser.displayName ?? "",
+              email: "",
+              displayName: otherUser.displayName ?? "",
+              avatarUrl: otherUser.avatarUrl ?? undefined,
+            }}
           />
           <StatusBadge
             status={
@@ -69,6 +94,41 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
         >
           {lastMessage}
         </p>
+      }
+      rightSection={
+        <div className="flex items-center gap-1">
+          {convo.isPinned && (
+            <Pin className="w-3.5 h-3.5 text-primary" />
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-1 rounded-full hover:bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={handleTogglePin}
+              >
+                {convo.isPinned ? (
+                  <>
+                    <PinOff className="w-4 h-4 mr-2" />
+                    Bỏ ghim
+                  </>
+                ) : (
+                  <>
+                    <Pin className="w-4 h-4 mr-2" />
+                    Ghim
+                  </>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       }
     />
   );

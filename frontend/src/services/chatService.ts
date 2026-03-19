@@ -77,5 +77,15 @@ export const chatService = {
   async recallMessage(messageId: string) {
     const res = await api.put(`/messages/${messageId}/recall`);
     return res.data;
+  },
+
+  async addReaction(messageId: string, emoji: string, conversationId: string) {
+    const res = await api.post(`/conversations/${conversationId}/messages/${messageId}/reaction`, { emoji });
+    return res.data;
+  },
+
+  async pinConversation(conversationId: string) {
+    const res = await api.patch(`/conversations/${conversationId}/pin`);
+    return res.data;
   }
 };

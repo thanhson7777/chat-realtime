@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { UserPlus, Users } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import type { Friend } from "@/types/user";
+import type { Friend } from "@/types/index";
 import IniviteSuggestionList from "../newGroupChat/IniviteSuggestionList";
 import SelectedUsersList from "../newGroupChat/SelectedUsersList";
 import { toast } from "sonner";

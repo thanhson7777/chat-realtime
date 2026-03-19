@@ -20,4 +20,9 @@ export const userService = {
     const res = await api.put("/users/change-password", data);
     return res.data;
   },
+  /** Lấy thông tin profile user theo ID (để xem profile người khác) */
+  getUserProfile: async (userId: string) => {
+    const res = await api.get(`/users/${userId}/profile`);
+    return res.data.user;
+  },
 };

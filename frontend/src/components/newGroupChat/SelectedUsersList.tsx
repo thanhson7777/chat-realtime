@@ -1,4 +1,4 @@
-import type { Friend } from "@/types/user";
+import type { Friend } from "@/types/index";
 import UserAvatar from "../chat/UserAvatar";
 import { X } from "lucide-react";
 
