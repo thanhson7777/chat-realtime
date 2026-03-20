@@ -1,6 +1,7 @@
 import Friend from "../models/Friend.js";
 import User from "../models/User.js";
 import FriendRequest from "../models/FriendRequest.js";
+import { io } from "../socket/index.js";
 
 export const sendFriendRequest = async (req, res) => {
   try {
@@ -51,6 +52,19 @@ export const sendFriendRequest = async (req, res) => {
       message,
     });
 
+    const fromUser = await User.findById(from)
+      .select("_id displayName avatarUrl")
+      .lean();
+
+    io.to(to.toString()).emit("friend-request-received", {
+      request: {
+        _id: request._id,
+        from: fromUser,
+        message: request.message,
+        createdAt: request.createdAt,
+      },
+    });
+
     return res
       .status(201)
       .json({ message: "Gửi lời mời kết bạn thành công", request });
@@ -85,8 +99,22 @@ export const acceptFriendRequest = async (req, res) => {
     await FriendRequest.findByIdAndDelete(requestId);
 
     const from = await User.findById(request.from)
-      .select("_id displayName avatarUrl")
+      .select("_id displayName avatarUrl username")
       .lean();
+
+    const to = await User.findById(request.to)
+      .select("_id displayName avatarUrl username")
+      .lean();
+
+    io.to(request.from.toString()).emit("friend-request-accepted", {
+      friend: to,
+      requestId,
+    });
+
+    io.to(request.to.toString()).emit("friend-request-accepted-self", {
+      friend: from,
+      requestId,
+    });
 
     return res.status(200).json({
       message: "Chấp nhận lời mời kết bạn thành công",
@@ -120,6 +148,10 @@ export const declineFriendRequest = async (req, res) => {
     }
 
     await FriendRequest.findByIdAndDelete(requestId);
+
+    io.to(request.from.toString()).emit("friend-request-rejected", {
+      requestId,
+    });
 
     return res.sendStatus(204);
   } catch (error) {

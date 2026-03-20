@@ -44,6 +44,12 @@ export const sendDirectMessage = async (req, res) => {
 
     await conversation.save();
 
+    // Populate for emit
+    await conversation.populate([
+      { path: "participants.userId", select: "displayName avatarUrl username email" },
+      { path: "lastMessage.senderId", select: "displayName avatarUrl" },
+    ]);
+
     emitNewMessage(io, conversation, message);
 
     return res.status(201).json({ message });

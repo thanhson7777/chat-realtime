@@ -41,6 +41,14 @@ export const signUp = async (req, res) => {
     return res.sendStatus(204);
   } catch (error) {
     console.error("Lỗi khi gọi signUp", error);
+
+    // Xử lý lỗi MongoDB duplicate key error
+    if (error.code === 11000) {
+      const duplicatedField = Object.keys(error.keyPattern || {})[0];
+      const fieldName = duplicatedField === "email" ? "Email" : "Tên đăng nhập";
+      return res.status(409).json({ message: `${fieldName} đã được sử dụng` });
+    }
+
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
