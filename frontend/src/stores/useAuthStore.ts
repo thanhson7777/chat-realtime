@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ loading: true });
 
-          //  gọi api
+          // gọi api
           await authService.signUp(username, password, email, firstName, lastName);
 
           toast.success(
@@ -36,7 +36,11 @@ export const useAuthStore = create<AuthState>()(
           );
         } catch (error) {
           console.error(error);
-          toast.error("Đăng ký không thành công");
+          const errorMessage =
+            (error as { response?: { data?: { message?: string } } })
+              ?.response?.data?.message || "Đăng ký không thành công";
+          toast.error(errorMessage);
+          throw error; // Ném lỗi để form không navigate
         } finally {
           set({ loading: false });
         }

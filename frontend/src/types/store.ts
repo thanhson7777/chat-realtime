@@ -95,12 +95,22 @@ export interface FriendState {
   loading: boolean;
   receivedList: FriendRequest[];
   sentList: FriendRequest[];
+  unreadRequestCount: number;
+
   searchByUsername: (username: string) => Promise<User | null>;
   addFriend: (to: string, message?: string) => Promise<string>;
   getAllFriendRequests: () => Promise<void>;
   acceptRequest: (requestId: string) => Promise<void>;
   declineRequest: (requestId: string) => Promise<void>;
   getFriends: () => Promise<void>;
+
+  // Realtime handlers
+  addReceivedRequest: (request: FriendRequest) => void;
+  addFriendRealtime: (friend: Friend) => void;
+  removeReceivedRequest: (requestId: string) => void;
+  removeSentRequest: (requestId: string) => void;
+  incrementUnreadCount: () => void;
+  clearUnreadCount: () => void;
 }
 
 export interface UserState {

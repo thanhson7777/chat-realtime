@@ -33,10 +33,13 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
   const onSubmit = async (data: SignUpFormValues) => {
     const { firstname, lastname, username, email, password } = data;
 
-    // gọi backend để signup
-    await signUp(username, password, email, firstname, lastname);
-
-    navigate("/signin");
+    try {
+      // gọi backend để signup
+      await signUp(username, password, email, firstname, lastname);
+      navigate("/signin");
+    } catch {
+      // Lỗi đã được xử lý trong signUp, không làm gì thêm
+    }
   };
 
   return (

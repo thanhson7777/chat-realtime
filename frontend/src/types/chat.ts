@@ -66,3 +66,11 @@ export interface Reaction {
   emoji: string;
   userIds: string[];
 }
+
+export interface SocketMessage extends Message {
+  sender?: {
+    _id: string;
+    displayName?: string;
+    avatarUrl?: string | null;
+  };
+}

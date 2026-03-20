@@ -16,16 +16,25 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import type { User } from "@/types/index";
 import Logout from "../auth/Logout";
 import { useState } from "react";
 import FriendRequestDialog from "../friendRequest/FriendRequestDialog";
 import ProfileDialog from "../profile/ProfileDialog";
+import { useFriendStore } from "@/stores/useFriendStore";
+import { toast } from "sonner";
 
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
   const [friendRequestOpen, setfriendRequestOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const { unreadRequestCount, clearUnreadCount } = useFriendStore();
+
+  const handleOpenFriendRequest = () => {
+    setfriendRequestOpen(true);
+    clearUnreadCount();
+  };
 
   return (
     <>
@@ -82,8 +91,18 @@ export function NavUser({ user }: { user: User }) {
                   <UserIcon className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
                   Tài Khoản
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setfriendRequestOpen(true)}>
-                  <Bell className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
+                <DropdownMenuItem onClick={handleOpenFriendRequest}>
+                  <div className="relative">
+                    <Bell className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
+                    {unreadRequestCount > 0 && (
+                      <Badge
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                      >
+                        {unreadRequestCount > 9 ? "9+" : unreadRequestCount}
+                      </Badge>
+                    )}
+                  </div>
                   Thông Báo
                 </DropdownMenuItem>
               </DropdownMenuGroup>

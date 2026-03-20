@@ -3,6 +3,8 @@ import { io, type Socket } from "socket.io-client";
 import { useAuthStore } from "./useAuthStore";
 import type { SocketState } from "@/types/store";
 import { useChatStore } from "./useChatStore";
+import { useFriendStore } from "./useFriendStore";
+import { toast } from "sonner";
 
 const baseURL = import.meta.env.VITE_SOCKET_URL;
 
@@ -29,6 +31,22 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     // online users
     socket.on("online-users", (userIds) => {
       set({ onlineUsers: userIds });
+    });
+
+    // ===== CONVERSATION EVENTS =====
+
+    // Khi nhận được conversation mới (từ tin nhắn direct)
+    socket.on("new-conversation", ({ conversation, message }) => {
+      // Join room để nhận tin nhắn sau đó
+      socket.emit("join-conversation", conversation._id);
+
+      // Thêm conversation vào danh sách
+      useChatStore.getState().addConvo(conversation);
+
+      // Thêm message vào messages state nếu có
+      if (message) {
+        useChatStore.getState().addMessage(message);
+      }
     });
 
     // new message
@@ -86,6 +104,29 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     // reaction updated
     socket.on("reaction-updated", ({ messageId, conversationId, reactions }) => {
       useChatStore.getState().updateReactions(messageId, conversationId, reactions);
+    });
+
+    // ===== FRIEND REQUEST EVENTS =====
+
+    // Khi có lời mời kết bạn mới
+    socket.on("friend-request-received", ({ request }) => {
+      useFriendStore.getState().addReceivedRequest(request);
+      toast.info(`Bạn có lời mời kết bạn từ ${request.from?.displayName || "người dùng"}`);
+    });
+
+    // Khi lời mời kết bạn được chấp nhận (người gửi nhận được)
+    socket.on("friend-request-accepted", ({ friend }) => {
+      useFriendStore.getState().addFriendRealtime(friend);
+    });
+
+    // Khi lời mời kết bạn được chấp nhận (người nhận tự động cập nhật)
+    socket.on("friend-request-accepted-self", ({ friend }) => {
+      useFriendStore.getState().addFriendRealtime(friend);
+    });
+
+    // Khi lời mời kết bạn bị từ chối (người gửi)
+    socket.on("friend-request-rejected", ({ requestId }) => {
+      useFriendStore.getState().removeSentRequest(requestId);
     });
   },
   disconnectSocket: () => {

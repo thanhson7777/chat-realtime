@@ -1,12 +1,15 @@
 import { friendService } from "@/services/friendService";
 import type { FriendState } from "@/types/store";
 import { create } from "zustand";
+import type { FriendRequest } from "@/types/user";
 
 export const useFriendStore = create<FriendState>((set, get) => ({
   friends: [],
   loading: false,
   receivedList: [],
   sentList: [],
+  unreadRequestCount: 0,
+
   searchByUsername: async (username) => {
     try {
       set({ loading: true });
@@ -43,7 +46,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
 
       const { received, sent } = result;
 
-      set({ receivedList: received, sentList: sent });
+      set({ receivedList: received, sentList: sent, unreadRequestCount: received.length });
     } catch (error) {
       console.error("Lỗi xảy ra khi getAllFriendRequests", error);
     } finally {
@@ -57,6 +60,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
 
       set((state) => ({
         receivedList: state.receivedList.filter((r) => r._id !== requestId),
+        unreadRequestCount: Math.max(0, state.unreadRequestCount - 1),
       }));
     } catch (error) {
       console.error("Lỗi xảy ra khi acceptRequest", error);
@@ -69,6 +73,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
 
       set((state) => ({
         receivedList: state.receivedList.filter((r) => r._id !== requestId),
+        unreadRequestCount: Math.max(0, state.unreadRequestCount - 1),
       }));
     } catch (error) {
       console.error("Lỗi xảy ra khi declineRequest", error);
@@ -87,5 +92,42 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  // Realtime handlers
+  addReceivedRequest: (request: FriendRequest) => {
+    set((state) => ({
+      receivedList: [request, ...state.receivedList],
+      unreadRequestCount: state.unreadRequestCount + 1,
+    }));
+  },
+
+  addFriendRealtime: (friend) => {
+    set((state) => ({
+      friends: [...state.friends, friend],
+    }));
+  },
+
+  removeReceivedRequest: (requestId) => {
+    set((state) => ({
+      receivedList: state.receivedList.filter((r) => r._id !== requestId),
+      unreadRequestCount: Math.max(0, state.unreadRequestCount - 1),
+    }));
+  },
+
+  removeSentRequest: (requestId) => {
+    set((state) => ({
+      sentList: state.sentList.filter((r) => r._id !== requestId),
+    }));
+  },
+
+  incrementUnreadCount: () => {
+    set((state) => ({
+      unreadRequestCount: state.unreadRequestCount + 1,
+    }));
+  },
+
+  clearUnreadCount: () => {
+    set({ unreadRequestCount: 0 });
   },
 }));

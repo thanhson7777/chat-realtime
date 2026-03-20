@@ -1,6 +1,6 @@
 import { chatService } from "@/services/chatService";
 import type { ChatState } from "@/types/store";
-import type { Conversation } from "@/types/chat";
+import type { Conversation, SocketMessage } from "@/types/chat";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./useAuthStore";
@@ -115,34 +115,32 @@ export const useChatStore = create<ChatState>()(
           console.error("Lỗi xảy ra gửi group message", error);
         }
       },
-      addMessage: async (message) => {
+      addMessage: async (message: SocketMessage) => {
         try {
           const { user } = useAuthStore.getState();
-          const { fetchMessages } = get();
 
-          message.isOwn = message.senderId === user?._id;
+          const senderId = message.senderId || message.sender?._id;
+          const isOwn = senderId === user?._id;
+          const processedMessage: SocketMessage = { ...message, isOwn };
 
           const convoId = message.conversationId;
 
-          let prevItems = get().messages[convoId]?.items ?? [];
-
-          if (prevItems.length === 0) {
-            await fetchMessages(message.conversationId);
-            prevItems = get().messages[convoId]?.items ?? [];
-          }
-
           set((state) => {
-            if (prevItems.some((m) => m._id === message._id)) {
+            const currentItems = state.messages[convoId]?.items ?? [];
+
+            // Nếu message đã tồn tại, không làm gì
+            if (currentItems.some((m) => m._id === processedMessage._id)) {
               return state;
             }
 
+            // Thêm message mới vào (không fetch lại, message từ socket là realtime)
             return {
               messages: {
                 ...state.messages,
                 [convoId]: {
-                  items: [...prevItems, message],
-                  hasMore: state.messages[convoId].hasMore,
-                  nextCursor: state.messages[convoId].nextCursor ?? undefined,
+                  items: [...currentItems, processedMessage],
+                  hasMore: state.messages[convoId]?.hasMore ?? true,
+                  nextCursor: state.messages[convoId]?.nextCursor ?? null,
                 },
               },
             };
