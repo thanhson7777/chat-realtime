@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, RotateCcw } from "lucide-react";
 import { useChatStore } from "@/stores/useChatStore";
-import ReactionPicker from "./ReactionPicker";
 import { useAuthStore } from "@/stores/useAuthStore";
+import ReactionPicker from "./ReactionPicker";
 
 interface MessageItemProps {
   message: Message;
@@ -54,12 +54,7 @@ const MessageItem = ({
 
   const handleReaction = (emoji: string) => {
     addReaction(message._id, emoji);
-  };
-
-  const hasUserReacted = (emoji: string) => {
-    if (!user?._id || !message.reactions) return false;
-    const reaction = message.reactions.find((r) => r.emoji === emoji);
-    return reaction?.userIds.includes(user._id) ?? false;
+    setShowReactionPicker(false);
   };
 
   return (
@@ -73,10 +68,32 @@ const MessageItem = ({
 
       <div
         className={cn(
-          "flex gap-2 message-bounce relative group mb-1.5", // hover group & space between
+          "flex gap-2 message-bounce relative group mb-1.5",
           message.isOwn ? "justify-end" : "justify-start"
         )}
       >
+        {/* Message Actions: Chỉ cho tin nhắn của mình, bên trái */}
+        {message.isOwn && !message.isRecalled && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center self-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 rounded-full hover:bg-muted text-muted-foreground">
+                  <MoreHorizontal className="w-5 h-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="top" className="w-40">
+                <DropdownMenuItem
+                  className="text-destructive focus:bg-destructive/10 cursor-pointer"
+                  onClick={handleRecall}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Thu hồi
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+
         {/* Avatar + Name (cho người khác) */}
         {!message.isOwn && (
           <div className="flex-shrink-0">
@@ -99,7 +116,7 @@ const MessageItem = ({
           </div>
         )}
 
-        {/* Name + Message bubble + Reaction button */}
+        {/* Name + Message bubble */}
         <div
           className={cn(
             "max-w-xs lg:max-w-md flex flex-col",
@@ -116,13 +133,13 @@ const MessageItem = ({
             </span>
           )}
 
-          {/* Message bubble + Reaction button container */}
+          {/* Message bubble + Reaction button */}
           <div className="flex items-start gap-1.5">
             {message.isRecalled ? (
               <Card
                 className={cn(
                   "px-4 py-2 border",
-                  message.isOwn ? "bg-muted/50 text-muted-foreground" : "bg-muted/50 text-muted-foreground"
+                  "bg-muted/50 text-muted-foreground"
                 )}
               >
                 <p className="text-sm italic">Tin nhắn đã được thu hồi</p>
@@ -147,8 +164,8 @@ const MessageItem = ({
                   </Card>
                 )}
 
-                {/* Reaction button - ngay sát message bubble */}
-                {!message.isRecalled && (
+                {/* Reaction button (+) cho tin nhắn người khác */}
+                {!message.isOwn && (
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center self-center">
                     <div className="relative">
                       <button
@@ -180,7 +197,7 @@ const MessageItem = ({
                     onClick={() => handleReaction(reaction.emoji)}
                     className={cn(
                       "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border transition-colors",
-                      hasUserReacted(reaction.emoji)
+                      reaction.userIds.includes(user?._id ?? "")
                         ? "bg-primary/10 border-primary/30"
                         : "bg-muted/50 border-transparent hover:bg-muted"
                     )}
@@ -188,7 +205,7 @@ const MessageItem = ({
                     <span>{reaction.emoji}</span>
                     <span className={cn(
                       "font-medium",
-                      hasUserReacted(reaction.emoji) ? "text-primary" : "text-muted-foreground"
+                      reaction.userIds.includes(user?._id ?? "") ? "text-primary" : "text-muted-foreground"
                     )}>
                       {reaction.userIds.length}
                     </span>
@@ -212,28 +229,6 @@ const MessageItem = ({
             </Badge>
           )}
         </div>
-
-        {/* Message Actions (only for own non-recalled messages) */}
-        {message.isOwn && !message.isRecalled && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-1 rounded-full hover:bg-muted text-muted-foreground">
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  className="text-destructive focus:bg-destructive/10 cursor-pointer"
-                  onClick={handleRecall}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Thu hồi
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
       </div>
     </>
   );
